@@ -16,6 +16,7 @@
  * Guards against overlapping tick runs and swallows/logs errors so one bad
  * tick can't kill the loop or crash the process.
  */
+import { syncInfomaniakMailboxes } from "./infomaniakSync";
 import { runSchedulerTick } from "./scheduler";
 
 const TICK_INTERVAL_MS = Number(process.env.OUTREACH_TICK_INTERVAL_MS ?? 60_000);
@@ -31,6 +32,7 @@ async function safeTick() {
   }
   tickRunning = true;
   try {
+    await syncInfomaniakMailboxes();
     const result = await runSchedulerTick();
     tickCount += 1;
     // One-line heartbeat every 10 ticks (~10 min at the default interval)

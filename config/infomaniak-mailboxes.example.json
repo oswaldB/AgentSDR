@@ -1,0 +1,12 @@
+[
+  {
+    "organizationId": "REPLACE_WITH_YOUR_ORGANIZATION_ID",
+    "emailAddress": "oswald@example.com",
+    "password": "REPLACE_WITH_THIS_MAILBOX_PASSWORD"
+  },
+  {
+    "organizationId": "REPLACE_WITH_YOUR_ORGANIZATION_ID",
+    "emailAddress": "contact@example.com",
+    "password": "REPLACE_WITH_THIS_OTHER_MAILBOX_PASSWORD"
+  }
+]

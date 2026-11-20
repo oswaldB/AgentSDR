@@ -1,3 +1,4 @@
+import { infomaniakMailbox } from "@/lib/outreach/infomaniakConfig";
 /**
  * Automatic CRM follow-ups (and immediate replies).
  *
@@ -375,7 +376,7 @@ type AccountSlot = { ok: false } | { ok: true; afterSend?: () => Promise<void> }
 /** Whether the account may send one follow-up now; for a mailbox it also takes the mailbox's turn. */
 async function takeAccountSlot(channel: CrmChannel, accountRef: string, now: Date): Promise<AccountSlot> {
   if (isMigrationControlPaused(CHANNEL_PAUSE[channel])) return { ok: false };
-  if (!(await isPlatformConnected(PLATFORM[channel]))) return { ok: false };
+  if (!(channel === "email" && infomaniakMailbox(accountRef)) && !(await isPlatformConnected(PLATFORM[channel]))) return { ok: false };
   if (!(await gapPassed(channel, accountRef, now))) return { ok: false };
 
   if (channel === "email") {

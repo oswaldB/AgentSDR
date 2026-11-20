@@ -5,6 +5,8 @@
  * admin has already authorized for our client ID, so no per-mailbox OAuth
  * consent or password is needed.
  */
+import { infomaniakMailbox } from "./infomaniakConfig";
+import { fetchInfomaniakInbound, sendInfomaniakEmail, testInfomaniakConnection } from "./infomaniak";
 import { google } from "googleapis";
 import MailComposer from "nodemailer/lib/mail-composer";
 import { encode } from "js-base64";
@@ -33,6 +35,7 @@ export type MailboxConnectionTest =
  * actually authorized for this address, without sending anything.
  */
 export async function testMailboxConnection(emailAddress: string): Promise<MailboxConnectionTest> {
+  if (infomaniakMailbox(emailAddress)) return testInfomaniakConnection(emailAddress);
   try {
     const auth = await jwtFor(emailAddress, ["https://www.googleapis.com/auth/gmail.readonly"]);
     const gmail = google.gmail({ version: "v1", auth });
@@ -83,7 +86,7 @@ export type SendEmailParams = {
  * API has no separate envelope field. Gmail handles hiding Bcc recipients from
  * the delivered copies.
  */
-export async function buildRawEmailMessage(params: SendEmailParams): Promise<Buffer> {
+export async function buildRawEmailMessage(params: SendEmailParams, keepBcc = true): Promise<Buffer> {
   const { from, to, subject, text, html, inReplyTo, references, cc, bcc, unsubscribeUrl, fromName } = params;
 
   const mail = new MailComposer({
@@ -113,7 +116,7 @@ export async function buildRawEmailMessage(params: SendEmailParams): Promise<Buf
   // MailComposer defaults to SMTP's behaviour of stripping Bcc from the
   // serialized message. Gmail's raw-message API instead uses that header to
   // identify Bcc recipients, so it must be retained until Gmail accepts it.
-  message.keepBcc = true;
+  message.keepBcc = keepBcc;
 
   return new Promise<Buffer>((resolve, reject) =>
     message.build((err, raw) => (err ? reject(err) : resolve(raw))),
@@ -134,6 +137,7 @@ export async function buildRawEmailMessage(params: SendEmailParams): Promise<Buf
  * documented, reliable way to force same-thread grouping for API sends.
  */
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
+  if (infomaniakMailbox(params.from)) return sendInfomaniakEmail(params);
   const { from, threadId } = params;
 
   const auth = await jwtFor(from, ["https://www.googleapis.com/auth/gmail.send"]);
@@ -248,6 +252,7 @@ export async function fetchNewInboundMessages(
   emailAddress: string,
   startHistoryId: string,
 ): Promise<{ messages: InboundMessage[]; newHistoryId: string | null }> {
+  if (infomaniakMailbox(emailAddress)) return fetchInfomaniakInbound(emailAddress, startHistoryId);
   const auth = await jwtFor(emailAddress, ["https://www.googleapis.com/auth/gmail.readonly"]);
   const gmail = google.gmail({ version: "v1", auth });
 
@@ -314,6 +319,7 @@ export async function fetchMessageRecipients(
   emailAddress: string,
   gmailMessageId: string,
 ): Promise<{ to: EmailAddress[]; cc: EmailAddress[]; replyTo: EmailAddress[] } | null> {
+  if (infomaniakMailbox(emailAddress)) return null; // Legacy Gmail-only recipient repair.
   const auth = await jwtFor(emailAddress, ["https://www.googleapis.com/auth/gmail.readonly"]);
   const gmail = google.gmail({ version: "v1", auth });
   try {

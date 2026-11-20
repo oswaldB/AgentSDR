@@ -1,3 +1,5 @@
+import { hasInfomaniakMailboxes, infomaniakMailbox } from "./infomaniakConfig";
+import { syncMailboxInbox } from "./gmailSync";
 /**
  * Send scheduler — Phase 2 of AgentSDR-app's two-phase send model, ported
  * from send-mails.ts's processAllMailBoxQueue() line-for-line. Each tick
@@ -96,7 +98,7 @@ export async function runSchedulerTick(options: { send?: SendFunction; now?: Dat
 async function tickOrganization(result: TickResult, now: Date, send: SendFunction, injectedSender: boolean) {
   // An injected sender (tests) bypasses Gmail entirely, so only the real one needs credentials.
   // Google is connected per organization: one without it is skipped, not the whole tick.
-  if (!injectedSender && !(await isPlatformConnected("google"))) {
+  if (!injectedSender && !hasInfomaniakMailboxes() && !(await isPlatformConnected("google"))) {
     console.log(`[outreach/scheduler] Google Workspace is not connected for organization ${currentOrganizationId()}; skipped`);
     return;
   }
@@ -116,6 +118,10 @@ async function tickOrganization(result: TickResult, now: Date, send: SendFunctio
   for (const { mailboxId } of queuedMailboxIds) {
     const [mailbox] = await db.select().from(mailboxes).where(and(inOrg(mailboxes), eq(mailboxes.id, mailboxId))).limit(1);
     if (!mailbox || mailbox.status !== "connected") continue;
+    if (!injectedSender && infomaniakMailbox(mailbox.emailAddress)) {
+      try { await syncMailboxInbox(mailbox.id); }
+      catch { result.failed += 1; continue; } // Never send a follow-up when replies could not be checked.
+    }
 
     if (mailbox.nextEmailTime && mailbox.nextEmailTime > now) {
       result.skippedThrottle += 1;

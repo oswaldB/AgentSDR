@@ -89,3 +89,6 @@ service-account*.json
 
 # Real copies of scripts/examples/* (mailboxes, sender knowledge, test person)
 /scripts/local/
+
+# Infomaniak per-mailbox passwords (only the example belongs in Git)
+/config/infomaniak-mailboxes.json

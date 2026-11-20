@@ -1,3 +1,4 @@
+import { infomaniakMailbox } from "./infomaniakConfig";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { mailboxes } from "./schema";
@@ -80,7 +81,7 @@ export async function connectMailbox(input: {
         status: "connected",
         lastError: null,
         lastTestedAt: new Date(),
-        lastHistoryId: test.historyId,
+        lastHistoryId: infomaniakMailbox(emailAddress) && existing?.lastHistoryId?.startsWith("imap:") ? existing.lastHistoryId : test.historyId,
         displayName: input.displayName?.trim() || existing?.displayName || null,
         ...(input.signatureHtml !== undefined ? { signatureHtml: input.signatureHtml?.trim() || null } : {}),
         updatedAt: new Date(),

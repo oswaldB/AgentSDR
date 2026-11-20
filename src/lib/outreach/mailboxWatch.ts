@@ -1,3 +1,4 @@
+import { infomaniakMailbox } from "./infomaniakConfig";
 import "server-only";
 
 import { and, eq } from "drizzle-orm";
@@ -36,6 +37,8 @@ export async function renewMailboxWatches(options: { organizationIds?: string[] 
 
   for (const [organizationId, organizationMailboxes] of byOrganization) {
     await runInOrganization(organizationId, async () => {
+      const gmailMailboxes = organizationMailboxes.filter((m) => !infomaniakMailbox(m.emailAddress));
+      if (!gmailMailboxes.length) return; // IMAP mailboxes use polling, never Gmail watches.
       const google = await getPlatformCredentials("google");
       if (!google) {
         console.log(`[outreach/watch] Google Workspace is not connected for organization ${organizationId}; watch renewal skipped`);
@@ -47,7 +50,7 @@ export async function renewMailboxWatches(options: { organizationIds?: string[] 
         skipped.push({ organizationId, reason: "gmail_watch_topic_not_configured" });
         return;
       }
-      for (const mailbox of organizationMailboxes) {
+      for (const mailbox of gmailMailboxes) {
         const result = await registerWatch(mailbox.emailAddress, topic);
         if (result.ok) {
           await db

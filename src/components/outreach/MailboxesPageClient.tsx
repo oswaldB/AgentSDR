@@ -55,7 +55,7 @@ export default function MailboxesPageClient({ mailboxes }: { mailboxes: Mailbox[
           <EmptyState
             icon={RiMailLine}
             title="No mailboxes yet"
-            description="Add a Google Workspace address authorised for sending, and campaigns can start sending from it."
+            description="Add a configured Infomaniak mailbox or an authorised Google Workspace address to send campaigns."
             action={
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <AddMailboxButton />

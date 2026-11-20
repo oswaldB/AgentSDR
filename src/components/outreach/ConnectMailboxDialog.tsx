@@ -61,7 +61,7 @@ export default function ConnectMailboxDialog({ onClose }: { onClose: () => void 
       <Modal.Content size="max-w-lg" hideClose={testing} onEscapeKeyDown={(event) => testing && event.preventDefault()}>
         <Modal.Header icon={RiMailAddLine}>
           <Modal.Title>Add a mailbox</Modal.Title>
-          <Modal.Description>A Google Workspace address already authorised for sending. It is tested before it is saved.</Modal.Description>
+          <Modal.Description>A configured Infomaniak mailbox or an authorised Google Workspace address. SMTP/IMAP or Gmail access is tested before connecting.</Modal.Description>
           <DocsLink page="email/connect#add-a-mailbox" appearance="inline" className="mt-1.5 text-paragraph-xs" />
         </Modal.Header>
 
@@ -72,7 +72,7 @@ export default function ConnectMailboxDialog({ onClose }: { onClose: () => void 
                 label="Email address"
                 htmlFor="mailbox-email"
                 required
-                description="Must be authorised for our app's client ID in the Workspace admin console (domain-wide delegation)."
+                description="For Infomaniak, use an address configured by your server administrator. For Google Workspace, domain-wide delegation is required."
               >
                 <Input.Root size="medium">
                   <Input.Wrapper>

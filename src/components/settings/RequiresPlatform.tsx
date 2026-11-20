@@ -1,3 +1,4 @@
+import { hasInfomaniakMailboxes } from "@/lib/outreach/infomaniakConfig";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { RiPlugLine } from "@remixicon/react";
@@ -37,7 +38,7 @@ export async function RequiresPlatform({
   className?: string;
 }) {
   const ctx = await requirePageOrgContext();
-  const connected = await runInOrganization(ctx.organizationId, () => isPlatformConnected(platform));
+  const connected = await runInOrganization(ctx.organizationId, () => (platform === "google" && hasInfomaniakMailboxes()) || isPlatformConnected(platform));
   if (connected) return <>{children}</>;
   if (fallback !== undefined) return <>{fallback}</>;
   const prompt = <PlatformConnectPrompt platform={platform} settingsHref={settingsHref} guideHref={guideHref} />;

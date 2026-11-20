@@ -3,6 +3,7 @@
  * reply bridge. Called either from the Pub/Sub push webhook (real-time,
  * pushHistoryId supplied) or as a periodic catch-up sweep.
  */
+import { hasInfomaniakMailboxes } from "./infomaniakConfig";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { mailboxes } from "./schema";
@@ -25,7 +26,7 @@ type SyncMailboxOptions = {
  * A mailbox of another organization is simply not found.
  */
 export async function syncMailboxInbox(mailboxId: string, options: SyncMailboxOptions = {}) {
-  if (!options.fetch && !(await isPlatformConnected("google"))) {
+  if (!options.fetch && !hasInfomaniakMailboxes() && !(await isPlatformConnected("google"))) {
     console.log("[outreach/gmailSync] Google Workspace is not connected; inbox sync skipped");
     return { synced: 0 };
   }

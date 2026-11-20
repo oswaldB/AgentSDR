@@ -1,0 +1,14 @@
+# Build this modified source, then mount mailbox credentials read-only.
+# docker compose -f docker-compose.yml -f docker-compose.infomaniak.yml up -d --build
+services:
+  app:
+    build: .
+    image: agentsdr:infomaniak
+    environment:
+      INFOMANIAK_MAILBOXES_FILE: /run/secrets/infomaniak-mailboxes.json
+    secrets:
+      - source: infomaniak_mailboxes
+        target: infomaniak-mailboxes.json
+secrets:
+  infomaniak_mailboxes:
+    file: ./config/infomaniak-mailboxes.json
